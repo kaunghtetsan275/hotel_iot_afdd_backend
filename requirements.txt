@@ -1,0 +1,8 @@
+Django==5.2
+djangorestframework==3.16.0
+postgrest==1.0.1
+propcache==0.3.1
+psycopg2-binary==2.9.10
+python-decouple==3.8
+Requests==2.32.3
+supabase==2.15.0
