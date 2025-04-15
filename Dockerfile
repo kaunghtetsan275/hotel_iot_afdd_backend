@@ -1,24 +1,27 @@
-# Use the official Python image as the base image
-FROM python:3.11-alpine
+ARG PYTHON_VERSION=3.11-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+FROM python:${PYTHON_VERSION}
 
-# Set the working directory in the container
-WORKDIR /afdd_backend
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-# Copy the requirements file into the container
-COPY requirements.txt /afdd_backend/requirements.txt
+# install psycopg2 dependencies.
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN mkdir -p /code
 
-# Copy the Django project into the container
-COPY . /afdd_backend/
+WORKDIR /code
 
-# Expose the port that the Django app runs on
+COPY requirements.txt /tmp/requirements.txt
+RUN set -ex && \
+    pip install --upgrade pip && \
+    pip install -r /tmp/requirements.txt && \
+    rm -rf /root/.cache/
+COPY . /code
+
 EXPOSE 8000
 
-# Run the Django development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["gunicorn","--bind",":8000","--workers","2","afdd_backend.wsgi"]
