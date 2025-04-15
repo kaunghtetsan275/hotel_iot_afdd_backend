@@ -1,5 +1,5 @@
 # Use the official Python image as the base image
-FROM python:3.13-alpine
+FROM python:3.11-alpine
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
