@@ -37,6 +37,65 @@ class TimescaleDBConnector:
         self.cursor.close()
         self.conn.close()
 
+def load_all_supabase():
+    # Load hotels
+    hotel_url = f"{SUPABASE_URL}/rest/v1/hotels"
+    hotel_response = requests.get(hotel_url, headers=HEADERS)
+    if hotel_response.status_code == 200:
+        hotels = hotel_response.json()
+        for item in hotels:
+            Hotel.objects.update_or_create(
+                id=item["id"],
+                defaults={
+                    "name": item.get("name", ""),
+                    "code": item.get("code")
+                }
+            )
+
+    # Load floors
+    floor_url = f"{SUPABASE_URL}/rest/v1/floors"
+    floor_response = requests.get(floor_url, headers=HEADERS)
+    if floor_response.status_code == 200:
+        floors = floor_response.json()
+        for item in floors:
+            Floor.objects.update_or_create(
+                id=item["id"],
+                defaults={
+                    "hotel_id": item.get("hotel_id"),
+                    "floor_id": item.get("floor_id")
+                }
+            )
+
+    # Load rooms
+    room_url = f"{SUPABASE_URL}/rest/v1/rooms"
+    room_response = requests.get(room_url, headers=HEADERS)
+    if room_response.status_code == 200:
+        rooms = room_response.json()
+        for item in rooms:
+            Room.objects.update_or_create(
+                id=item["id"],
+                defaults={
+                    "name": item.get("name", ""),
+                    "room_number": item.get("room_number"),
+                    "floor_id": item.get("floor_id")
+                }
+            )
+
+    # Load devices
+    device_url = f"{SUPABASE_URL}/rest/v1/devices"
+    device_response = requests.get(device_url, headers=HEADERS)
+    if device_response.status_code == 200:
+        devices = device_response.json()
+        for item in devices:
+            Device.objects.update_or_create(
+                id=item["id"],
+                defaults={
+                    "room_id": item.get("room_id"),
+                    "device_identifier": item.get("device_identifier", ""),
+                    "sensor_type": item.get("sensor_type", "")
+                }
+            )
+
 @api_view(['GET'])
 def list_hotels(request):
     # list hotel from supabase
@@ -45,16 +104,6 @@ def list_hotels(request):
     if response.status_code != 200:
         return JsonResponse({"error": "Failed to fetch hotels"}, status=response.status_code)
     hotels = response.json()
-
-    # Upsert into Django DB
-    for item in hotels:
-        Hotel.objects.update_or_create(
-            id=item["id"],
-            defaults={
-                "name": item.get("name", ""),
-                "code": item.get("code")
-            }
-        )
 
     # Query local DB and return serialized data
     hotels = Hotel.objects.all()
@@ -67,17 +116,6 @@ def list_floors(request, hotel_id):
     response = requests.get(url, headers=HEADERS)
     if response.status_code != 200:
         return JsonResponse({"error": "Failed to fetch floors"}, status=response.status_code)
-    floor_data = response.json()
-    
-    # Upsert into Django DB
-    for item in floor_data:
-        Floor.objects.update_or_create(
-            id=item["id"],
-            defaults={
-                "hotel_id": item.get("hotel_id"),
-                "floor_id": item.get("floor_id")
-            }
-        )
     floors = Floor.objects.filter(hotel_id=hotel_id)
     serializer = FloorSerializer(floors, many=True)
     return Response(serializer.data)
@@ -88,17 +126,14 @@ def list_rooms(request, floor_id):
     response = requests.get(url, headers=HEADERS)
     if response.status_code != 200:
         return JsonResponse({"error": "Failed to fetch rooms"}, status=response.status_code)
-    rooms_data = response.json()
-    for item in rooms_data:
-        Room.objects.update_or_create(
-            id=item["id"],
-            defaults={
-                "name": item.get("name", ""),
-                "room_number": item.get("room_number")
-            }
-        )
     rooms = Room.objects.filter(floor_id=floor_id)
     serializer = RoomSerializer(rooms, many=True)
+    return Response(serializer.data)
+
+@api_view(["GET"])
+def list_devices(request):
+    devices = Device.objects.all()
+    serializer = DeviceSerializer(devices, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
@@ -260,11 +295,6 @@ def update_threshold(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
         
-@require_http_methods(["GET"])
-def list_devices(request):
-    # TODO: Fetch all devices
-    return JsonResponse({"devices": []})
-
 @require_http_methods(["GET", "PUT", "DELETE"])
 def device_detail(request, device_id):
     if request.method == "GET":
