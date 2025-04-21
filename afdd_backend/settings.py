@@ -23,12 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-fg_6-5s+bm0o9yh%82*v!8c(p7^pe#v)qtrnruyz3c_flhpvh^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    '.ngrok-free.app'
     ]
 
 
@@ -42,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'api',
+    # 'api',
+    'api.apps.ApiConfig',
     'corsheaders',
 ]
 
@@ -148,8 +148,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# reverse proxy sets the right headers
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'http')
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:81',
+    'http://localhost',
+    'http://127.0.0.1',
+]
+
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False

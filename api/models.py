@@ -1,7 +1,7 @@
 from django.db import models
 
 class Hotel(models.Model):
-    id = models.BigIntegerField(primary_key=True)  # Match Supabase int8
+    id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
     name = models.CharField(max_length=800)
     code = models.CharField(max_length=800, blank=True, null=True)
 
@@ -10,7 +10,7 @@ class Hotel(models.Model):
         db_table = 'hotels'  # matches Supabase table name
 
 class Floor(models.Model):
-    id = models.BigIntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     hotel_id = models.ForeignKey(Hotel, on_delete=models.CASCADE)
     floor_id = models.CharField(max_length=255, blank=True, null=True)
 
@@ -19,7 +19,7 @@ class Floor(models.Model):
         db_table = 'floors'
 
 class Room(models.Model):
-    id = models.BigIntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.TextField(blank=True, null=True)
     room_number = models.TextField(blank=True, null=True)
     floor = models.ForeignKey(Floor, on_delete=models.CASCADE)
@@ -29,7 +29,7 @@ class Room(models.Model):
         db_table = 'rooms'
 
 class Device(models.Model):
-    id = models.BigIntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, blank=True, null=True)
     device_identifier = models.TextField(blank=True, null=True)
     sensor_type = models.TextField(blank=True, null=True)

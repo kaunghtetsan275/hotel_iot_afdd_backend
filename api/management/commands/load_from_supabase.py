@@ -22,13 +22,12 @@ class Command(BaseCommand):
         if hotel_response.status_code == 200:
             hotels = hotel_response.json()
             for item in hotels:
-                Hotel.objects.update_or_create(
-                    id=item["id"],
-                    defaults={
-                        "name": item.get("name", ""),
-                        "code": item.get("code")
-                    }
-                )
+                if not Hotel.objects.filter(id=item["id"]).exists():
+                    Hotel.objects.create(
+                        id=item["id"],
+                        name=item.get("name", ""),
+                        code=item.get("code")
+                    )
 
         # Load floors
         floor_url = f"{SUPABASE_URL}/rest/v1/floors"
@@ -36,13 +35,12 @@ class Command(BaseCommand):
         if floor_response.status_code == 200:
             floors = floor_response.json()
             for item in floors:
-                Floor.objects.update_or_create(
-                    id=item["id"],
-                    defaults={
-                        "hotel_id": Hotel.objects.get(id=item.get("hotel_id")),
-                        "floor_id": item.get("floor_id")
-                    }
-                )
+                if not Floor.objects.filter(id=item["id"]).exists():
+                    Floor.objects.create(
+                        id=item["id"],
+                        hotel_id=Hotel.objects.get(id=item.get("hotel_id")),
+                        floor_id=item.get("floor_id")
+                    )
 
         # Load rooms
         room_url = f"{SUPABASE_URL}/rest/v1/rooms"
@@ -50,14 +48,13 @@ class Command(BaseCommand):
         if room_response.status_code == 200:
             rooms = room_response.json()
             for item in rooms:
-                Room.objects.update_or_create(
-                    id=item["id"],
-                    defaults={
-                        "name": item.get("name", ""),
-                        "room_number": item.get("room_number"),
-                        "floor": Floor.objects.get(id=item.get("floor_id"))
-                    }
-                )
+                if not Room.objects.filter(id=item["id"]).exists():
+                    Room.objects.create(
+                        id=item["id"],
+                        name=item.get("name", ""),
+                        room_number=item.get("room_number"),
+                        floor=Floor.objects.get(id=item.get("floor_id"))
+                    )
 
         # Load devices
         device_url = f"{SUPABASE_URL}/rest/v1/devices"
@@ -65,11 +62,10 @@ class Command(BaseCommand):
         if device_response.status_code == 200:
             devices = device_response.json()
             for item in devices:
-                Device.objects.update_or_create(
-                    id=item["id"],
-                    defaults={
-                        "room": Room.objects.get(id=item.get("room_id")),
-                        "device_identifier": item.get("device_identifier", ""),
-                        "sensor_type": item.get("sensor_type", "")
-                    }
-                )
+                if not Device.objects.filter(id=item["id"]).exists():
+                    Device.objects.create(
+                        id=item["id"],
+                        room=Room.objects.get(id=item.get("room_id")),
+                        device_identifier=item.get("device_identifier", ""),
+                        sensor_type=item.get("sensor_type", "")
+                    )

@@ -1,21 +1,40 @@
 services:
   hiafdd_backend:
-      container_name: hiafdd_backend_container
-      build:
-        context: .
-        dockerfile: Dockerfile
-      command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py load_from_supabase && gunicorn afdd_backend.wsgi:application --bind 0.0.0.0:8000"
-      ports:
-        - "8001:8000"
-      env_file:
-        - .env
-      environment:
-        - TIMESCALEDB_HOST=timescaledb-django
-        - TIMESCALEDB_PORT=5432
-        - DEBUG=False
-      depends_on:
-        - timescaledb-django
-      restart: unless-stopped
+    container_name: hiafdd_backend_container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "python manage.py collectstatic --noinput &&
+                    python manage.py makemigrations && 
+                    python manage.py migrate && 
+                    python manage.py create_default_superuser &&
+                    python manage.py load_from_supabase && 
+                    gunicorn afdd_backend.wsgi:application --bind 0.0.0.0:8000"
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    environment:      
+      - TIMESCALEDB_HOST=timescaledb-django
+      - TIMESCALEDB_PORT=5432
+      - DEBUG=False
+    depends_on:
+      - timescaledb-django
+    volumes:
+      - static_volume:/afdd_backend/staticfiles
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: nginx
+    ports:
+      - "81:80"
+    depends_on:
+      - hiafdd_backend
+    volumes:
+      - static_volume:/afdd_backend/staticfiles
+    restart: unless-stopped
 
   timescaledb-django:
     image: timescale/timescaledb:latest-pg14
@@ -37,3 +56,4 @@ services:
 
 volumes:
   timescaledb_data:
+  static_volume:

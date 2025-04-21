@@ -11,16 +11,7 @@ import json
 from django.forms.models import model_to_dict
 from decouple import config
 import psycopg2
-
-# Load Supabase configuration from .env
-SUPABASE_URL = config('SUPABASE_URL')
-SUPABASE_API_KEY = config('SUPABASE_API_KEY')
-
-HEADERS = {
-    "apikey": SUPABASE_API_KEY,
-    "Authorization": f"Bearer {SUPABASE_API_KEY}",
-    "Content-Type": "application/json"
-}
+from .config.supabase_client import SUPABASE_URL, SUPABASE_API_KEY, HEADERS
 
 class TimescaleDBConnector:
     def __init__(self):
