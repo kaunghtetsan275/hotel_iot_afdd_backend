@@ -1,21 +1,30 @@
-# Use the official Python image as the base image
+# Base image
 FROM python:3.11-alpine
 
-# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Set the working directory in the container
 WORKDIR /afdd_backend
 
-# Copy the requirements file into the container
-COPY requirements.txt /afdd_backend/requirements.txt
+# Install system deps
+RUN apk update && apk add --no-cache bash nginx supervisor
 
-# Install dependencies
+# Install Python deps
+COPY requirements.txt /afdd_backend/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the Django project into the container
+# Copy project
 COPY . /afdd_backend/
 
-# Expose the port that the Django app runs on
-EXPOSE 8000
+# Set up nginx conf
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+
+# Set up supervisord
+COPY supervisord.conf /etc/supervisord.conf
+
+# Expose dynamic port for Render
+EXPOSE 10000
+
+# Start both Gunicorn and NGINX via supervisor
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]

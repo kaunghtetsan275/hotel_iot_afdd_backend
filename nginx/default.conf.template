@@ -1,0 +1,41 @@
+server {
+    listen ${PORT};
+    server_name hotel-iot-afdd-backend.onrender.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /static/ {
+        alias /afdd_backend/staticfiles/;
+    }
+
+    location /media/ {
+        alias /afdd_backend/media/;
+    }
+}
+
+server {
+        listen 80;
+        server_name admin.localhost;
+
+        # Serve static files from the shared volume
+        location /static/ {
+            alias /afdd_backend/staticfiles/;
+        }
+
+        # Reverse proxy to Gunicorn running in the backend container
+        location / {
+            proxy_pass http://hiafdd_backend:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass_request_headers on;
+        }   
+    }

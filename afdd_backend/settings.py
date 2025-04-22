@@ -22,14 +22,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-fg_6-5s+bm0o9yh%82*v!8c(p7^pe#v)qtrnruyz3c_flhpvh^'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-    ]
-
 
 # Application definition
 
@@ -56,14 +48,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-]
-
-CORS_ALLOWED_ORIGINS = [
-    'https://hotel-iot-afdd-frontend.vercel.app',
-    "http://localhost:3001",
-    "http://localhost:3000",
-    "http://localhost:5173", 
-    "http://localhost:5174",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -155,15 +139,40 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+ALLOWED_HOSTS = [
+    'hotel-iot-afdd-backend.onrender.com',
+    '127.0.0.1',
+    'localhost',
+    'admin.localhost',
+    ]
+CORS_ALLOWED_ORIGINS = [
+    'https://hotel-iot-afdd-frontend.vercel.app',
+    "http://localhost:3001",
+    "http://localhost:3000",
+    "http://localhost:5173", 
+    "http://localhost:5174",
+]
+
 # reverse proxy sets the right headers
 USE_X_FORWARDED_HOST = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'http')
 
 CSRF_TRUSTED_ORIGINS = [
+    'hotel-iot-afdd-backend.onrender.com',
     'http://localhost:81',
+    'http://localhost:80',
+    'http://admin.localhost:80',
+    'http://admin.localhost:81',
     'http://localhost',
     'http://127.0.0.1',
 ]
 
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
+# Change these if using SSL in production
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+# FORCE_SCRIPT_NAME='admin.localhost'
