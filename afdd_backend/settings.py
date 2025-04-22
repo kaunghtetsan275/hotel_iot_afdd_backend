@@ -150,6 +150,7 @@ ALLOWED_HOSTS = [
     ]
 CORS_ALLOWED_ORIGINS = [
     'http://hotel-iot-afdd-backend.onrender.com',
+    'https://hotel-iot-afdd-backend.onrender.com',
     'https://hotel-iot-afdd-frontend.vercel.app',
     "http://localhost:3001",
     "http://localhost:3000",
@@ -168,12 +169,14 @@ CSRF_TRUSTED_ORIGINS = [
     'http://admin.localhost:80',
     'http://admin.localhost:81',
     'http://localhost',
+    'https://localhost',
     'http://127.0.0.1',
+    'https://127.0.0.1',
 ]
 
 # Change these if using SSL in production
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
