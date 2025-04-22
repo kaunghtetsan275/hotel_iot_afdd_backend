@@ -149,6 +149,7 @@ ALLOWED_HOSTS = [
     'admin.localhost',
     ]
 CORS_ALLOWED_ORIGINS = [
+    'http://hotel-iot-afdd-backend.onrender.com',
     'https://hotel-iot-afdd-frontend.vercel.app',
     "http://localhost:3001",
     "http://localhost:3000",
@@ -160,7 +161,8 @@ CORS_ALLOWED_ORIGINS = [
 USE_X_FORWARDED_HOST = True
 
 CSRF_TRUSTED_ORIGINS = [
-    'hotel-iot-afdd-backend.onrender.com',
+    'http://hotel-iot-afdd-backend.onrender.com',
+    'https://hotel-iot-afdd-backend.onrender.com',
     'http://localhost:81',
     'http://localhost:80',
     'http://admin.localhost:80',
