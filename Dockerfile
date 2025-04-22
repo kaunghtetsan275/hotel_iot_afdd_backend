@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /afdd_backend
 
 # Install system deps
-RUN apk update && apk add --no-cache bash nginx supervisor \
+RUN apk update && apk add --no-cache bash nginx supervisor gettext\
     && mkdir -p /etc/nginx/conf.d /etc/nginx/templates
 
 # Install Python deps
