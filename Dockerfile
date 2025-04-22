@@ -10,18 +10,18 @@ WORKDIR /afdd_backend
 RUN apk update && apk add --no-cache bash nginx supervisor gettext\
     && mkdir -p /etc/nginx/conf.d /etc/nginx/templates
 
-RUN python manage.py collectstatic --noinput
-RUN python manage.py makemigrations
-RUN python manage.py migrate
-RUN python manage.py create_default_superuser
-RUN python manage.py load_from_supabase
-
 # Install Python deps
 COPY requirements.txt /afdd_backend/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project
 COPY . /afdd_backend/
+
+RUN python manage.py collectstatic --noinput
+RUN python manage.py makemigrations
+RUN python manage.py migrate
+RUN python manage.py create_default_superuser
+RUN python manage.py load_from_supabase
 
 # Set up nginx conf
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
