@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /afdd_backend
 
 # Install system deps
-RUN apk update && apk add --no-cache bash nginx supervisor gettext\
+RUN apk update && apk add --no-cache bash nginx supervisor gettext sqlite\
     && mkdir -p /etc/nginx/conf.d /etc/nginx/templates
 
 # Install Python deps
@@ -16,12 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project
 COPY . /afdd_backend/
-
-RUN python manage.py collectstatic --noinput
-RUN python manage.py makemigrations
-RUN python manage.py migrate
-RUN python manage.py create_default_superuser
-RUN python manage.py load_from_supabase
 
 # Set up nginx conf
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
@@ -33,5 +27,8 @@ COPY supervisord.conf /etc/supervisord.conf
 # Expose dynamic port for Render
 EXPOSE 10000
 
-# Start both Gunicorn and NGINX via supervisor
-CMD ["supervisord", "-c", "/etc/supervisord.conf"]
+# Entrypoint shell script to set up Django at runtime
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+CMD ["/entrypoint.sh"]
