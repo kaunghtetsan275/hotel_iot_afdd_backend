@@ -1,5 +1,5 @@
 # Base image
-FROM python:3.11-alpine
+FROM python:3.13-alpine
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -9,6 +9,12 @@ WORKDIR /afdd_backend
 # Install system deps
 RUN apk update && apk add --no-cache bash nginx supervisor gettext\
     && mkdir -p /etc/nginx/conf.d /etc/nginx/templates
+
+RUN python manage.py collectstatic --noinput
+RUN python manage.py makemigrations
+RUN python manage.py migrate
+RUN python manage.py create_default_superuser
+RUN python manage.py load_from_supabase
 
 # Install Python deps
 COPY requirements.txt /afdd_backend/requirements.txt

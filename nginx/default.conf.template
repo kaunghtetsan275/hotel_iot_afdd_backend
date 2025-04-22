@@ -20,22 +20,22 @@ server {
     }
 }
 
-server {
-        listen 80;
-        server_name admin.localhost;
+# server {
+#         listen 80;
+#         server_name admin.localhost;
 
-        # Serve static files from the shared volume
-        location /static/ {
-            alias /afdd_backend/staticfiles/;
-        }
+#         # Serve static files from the shared volume
+#         location /static/ {
+#             alias /afdd_backend/staticfiles/;
+#         }
 
-        # Reverse proxy to Gunicorn running in the backend container
-        location / {
-            proxy_pass http://127.0.0.1:8000;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_pass_request_headers on;
-        }   
-    }
+#         # Reverse proxy to Gunicorn running in the backend container
+#         location / {
+#             proxy_pass http://127.0.0.1:8000;
+#             proxy_set_header Host $host;
+#             proxy_set_header X-Real-IP $remote_addr;
+#             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#             proxy_set_header X-Forwarded-Proto $scheme;
+#             proxy_pass_request_headers on;
+#         }   
+#     }
