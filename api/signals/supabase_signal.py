@@ -187,10 +187,18 @@ def sync_fault_status_to_supabase_on_delete(sender, instance, **kwargs):
 @receiver(post_save, sender=FaultThreshold)
 def sync_fault_threshold_to_supabase_on_save(sender, instance, created, **kwargs):
     payload = {
-        "id": instance.id,
-        "device_id": instance.device_id,
-        "threshold": instance.threshold,
-        "timestamp": instance.timestamp,
+        "temperature_min": instance.temperature_min,
+        "temperature_max": instance.temperature_max,
+        "humidity_min": instance.humidity_min,
+        "humidity_max": instance.humidity_max,
+        "co2_min": instance.co2_min,
+        "co2_max": instance.co2_max,
+        "power_kw_min": instance.power_kw_min,
+        "power_kw_max": instance.power_kw_max,
+        "occupancy_required": instance.occupancy_required,
+        "sensor_online_required": instance.sensor_online_required,
+        "sensitivity_min": instance.sensitivity_min,
+        "sensitivity_max": instance.sensitivity_max,
     }
 
     if created:
@@ -208,7 +216,10 @@ def sync_fault_threshold_to_supabase_on_save(sender, instance, created, **kwargs
         else:
             existing_record = supabase.table("fault_thresholds").select("id").eq("id", instance.id).execute()
             if existing_record.data:
+                print("payload", payload)
                 supabase.table("fault_thresholds").update(payload).eq("id", instance.id).execute()
+            else:
+                print("No existing record found in Supabase for ID:", instance.id)
 
 @receiver(post_delete, sender=FaultThreshold)
 def sync_fault_threshold_to_supabase_on_delete(sender, instance, **kwargs):

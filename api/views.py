@@ -89,13 +89,6 @@ def load_all_supabase():
 
 @api_view(['GET'])
 def list_hotels(request):
-    # list hotel from supabase
-    url = f"{SUPABASE_URL}/rest/v1/hotels"
-    response = requests.get(url, headers=HEADERS)
-    if response.status_code != 200:
-        return JsonResponse({"error": "Failed to fetch hotels"}, status=response.status_code)
-    hotels = response.json()
-
     # Query local DB and return serialized data
     hotels = Hotel.objects.all()
     serializer = HotelSerializer(hotels, many=True)
@@ -103,22 +96,20 @@ def list_hotels(request):
 
 @api_view(['GET'])
 def list_floors(request, hotel_id):
-    url = f"{SUPABASE_URL}/rest/v1/floors?hotel_id=eq.{hotel_id}"
-    response = requests.get(url, headers=HEADERS)
-    if response.status_code != 200:
-        return JsonResponse({"error": "Failed to fetch floors"}, status=response.status_code)
     floors = Floor.objects.filter(hotel_id=hotel_id)
     serializer = FloorSerializer(floors, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
 def list_rooms(request, floor_id):
-    url = f"{SUPABASE_URL}/rest/v1/rooms?floor_id=eq.{floor_id}"
-    response = requests.get(url, headers=HEADERS)
-    if response.status_code != 200:
-        return JsonResponse({"error": "Failed to fetch rooms"}, status=response.status_code)
     rooms = Room.objects.filter(floor_id=floor_id)
     serializer = RoomSerializer(rooms, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def list_devices_in_room(request, room_id):
+    devices = Device.objects.filter(room_id=room_id)
+    serializer = DeviceSerializer(devices, many=True)
     return Response(serializer.data)
 
 @api_view(["GET"])
@@ -229,7 +220,6 @@ def update_alert_status(alert_id, status):
 @api_view(['GET', 'PUT'])
 def get_thresholds(request):
     try:
-        # Assuming you have a single record for thresholds
         threshold = FaultThreshold.objects.first()
         
         if request.method == 'GET':
@@ -246,42 +236,34 @@ def get_thresholds(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# POST or PUT to update a specific threshold (or create one if it doesn't exist)
-@csrf_exempt
+@api_view(['POST', 'PUT'])
 def update_threshold(request):
+    # NOTE: table schema to be reconsidered
     if request.method in ['POST', 'PUT']:
         try:
             data = json.loads(request.body)
-            print("Received data:", data)  # Debugging line
-            threshold, created = FaultThreshold.objects.get_or_create(
-                id=data.get('id', None),  # Assuming you have an ID to identify the threshold
-                defaults={
-                    'temperature_min': data.get('temperature_min', None),
-                    'temperature_max': data.get('temperature_max', None),
-                    'humidity_min': data.get('humidity_min', None),
-                    'humidity_max': data.get('humidity_max', None),
-                    'co2_min': data.get('co2_min', None),
-                    'co2_max': data.get('co2_max', None),
-                    'power_kw_min': data.get('power_kw_min', None),
-                    'power_kw_max': data.get('power_kw_max', None),
-                    'occupancy_required': data.get('occupancy_required', False),
-                    'sensor_online_required': data.get('sensor_online_required', True),
-                    'sensitivity_min': data.get('sensitivity_min', None),
-                    'sensitivity_max': data.get('sensitivity_max', None)
-                }
+            print("Received data:", data)
+            threshold = FaultThreshold.objects.first()
+            if not threshold:
+                return JsonResponse({'error': 'No threshold found'}, status=404)
+
+            # Update the threshold values
+            FaultThreshold.objects.filter(id=threshold.id).update(
+                temperature_min=data.get('temperature_min', threshold.temperature_min),
+                temperature_max=data.get('temperature_max', threshold.temperature_max),
+                humidity_min=data.get('humidity_min', threshold.humidity_min),
+                humidity_max=data.get('humidity_max', threshold.humidity_max),
+                co2_min=data.get('co2_min', threshold.co2_min),
+                co2_max=data.get('co2_max', threshold.co2_max),
+                power_kw_min=data.get('power_kw_min', threshold.power_kw_min),
+                power_kw_max=data.get('power_kw_max', threshold.power_kw_max),
+                occupancy_required=data.get('occupancy_required', threshold.occupancy_required),
+                sensor_online_required=data.get('sensor_online_required', threshold.sensor_online_required),
+                sensitivity_min=data.get('sensitivity_min', threshold.sensitivity_min),
+                sensitivity_max=data.get('sensitivity_max', threshold.sensitivity_max)
             )
 
-            # Update fields
-            for field in [
-                'temperature_min', 'temperature_max', 'humidity_min', 'humidity_max',
-                'co2_min', 'co2_max','power_kw_min', 'power_kw_max','occupancy_required',
-                'sensor_online_required', 'sensitivity_min', 'sensitivity_max'
-            ]:
-                if field in data:
-                    setattr(threshold, field, data[field])
-
-            threshold.save()
-            return JsonResponse(model_to_dict(threshold), status=200)
+            return JsonResponse("Updated threshold", status=200, safe=False)
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)

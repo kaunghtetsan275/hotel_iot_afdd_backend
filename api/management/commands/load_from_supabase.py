@@ -1,7 +1,7 @@
 import os
 import requests
 from django.core.management.base import BaseCommand
-from api.models import Hotel, Floor, Room, Device
+from api.models import Hotel, Floor, Room, Device, FaultThreshold
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 HEADERS = {
@@ -68,4 +68,27 @@ class Command(BaseCommand):
                         room=Room.objects.get(id=item.get("room_id")),
                         device_identifier=item.get("device_identifier", ""),
                         sensor_type=item.get("sensor_type", "")
+                    )
+        
+        # Load thresholds
+        threshold_url = f"{SUPABASE_URL}/rest/v1/fault_thresholds"
+        threshold_response = requests.get(threshold_url, headers=HEADERS)
+        if threshold_response.status_code == 200:
+            thresholds = threshold_response.json()
+            for item in thresholds:
+                if not FaultThreshold.objects.filter(id=item["id"]).exists():
+                    FaultThreshold.objects.create(
+                        id=item["id"],
+                        temperature_min=item.get("temperature_min"),
+                        temperature_max=item.get("temperature_max"),
+                        humidity_min=item.get("humidity_min"),
+                        humidity_max=item.get("humidity_max"),
+                        co2_min=item.get("co2_min"),
+                        co2_max=item.get("co2_max"),
+                        power_kw_min=item.get("power_kw_min"),
+                        power_kw_max=item.get("power_kw_max"),
+                        occupancy_required=item.get("occupancy_required"),
+                        sensor_online_required=item.get("sensor_online_required"),
+                        sensitivity_min=item.get("sensitivity_min"),
+                        sensitivity_max=item.get("sensitivity_max")
                     )

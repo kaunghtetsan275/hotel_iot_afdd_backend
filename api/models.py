@@ -55,6 +55,7 @@ class FaultStatus(models.Model):
 
 class FaultThreshold(models.Model):
     # Threshold fields
+    id = models.AutoField(primary_key=True)
     temperature_min = models.FloatField(blank=True, null=True)
     temperature_max = models.FloatField(blank=True, null=True)
     humidity_min = models.FloatField(blank=True, null=True)
